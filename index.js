@@ -22,7 +22,7 @@ app.get('/', async (req, res) => {
 });
 app.post('/api/url/shorten', async (req, res) => {
     
-  // const { originalUrl } = req.body;
+  const { originalUrl } = req.body;
 const requestHost = req.get('host'); // e.g. vercel-backen-gold.vercel.app
   const protocol = req.protocol; // http or https
   const baseUrl  = `${protocol}://${requestHost}`;
