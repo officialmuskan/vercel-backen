@@ -20,96 +20,41 @@ connectDatabase()
 app.get('/', async (req, res) => {
   res.json("hello");
 });
-// app.post('/api/url/shorten', async (req, res) => {
+app.post('/api/url/shorten', async (req, res) => {
     
   // const { originalUrl } = req.body;
+const requestHost = req.get('host'); // e.g. vercel-backen-gold.vercel.app
+  const protocol = req.protocol; // http or https
+  const baseUrl  = `${protocol}://${requestHost}`;
   // const baseUrl = 'http://localhost:5000';
 
-  // // Check base url
-  // if (!validUrl.isUri(baseUrl)) {
-  //   return res.status(401).json('Invalid base url');
-  // }
-
-  // // Create url code
-  // const urlCode = shortid.generate();
-
-  // // Check original url
-  // if (validUrl.isUri(originalUrl)) {
-  //   try {
-  //     let url = await Url.findOne({ originalUrl });
-
-  //     if (url) {
-  //       res.json(url);
-  //     } else {
-  //       const shortUrl = baseUrl + '/' + urlCode;
-
-  //       url = new Url({
-  //         originalUrl,
-  //         shortUrl,
-  //         urlCode,
-  //         date: new Date()
-  //       });
-
-  //       await url.save();
-  //       res.json(url);
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     res.status(500).json('Server error');
-  //   }
-  // } else {
-  //   res.status(401).json('Invalid original url');
-  // }
-// });
-app.post('/api/url/shorten', async (req, res) => {
-  const { originalUrl } = req.body;
-
-  // Always save with localhost (for consistency in DB)
-  const dbBaseUrl = 'http://localhost:5000';
-
-  // But detect real host when responding to user
-  const requestHost = req.get('host'); // e.g. vercel-backen-gold.vercel.app
-  const protocol = req.protocol; // http or https
-  const responseBaseUrl = `${protocol}://${requestHost}`;
-
   // Check base url
-  if (!validUrl.isUri(dbBaseUrl)) {
+  if (!validUrl.isUri(baseUrl)) {
     return res.status(401).json('Invalid base url');
   }
 
   // Create url code
   const urlCode = shortid.generate();
 
+  // Check original url
   if (validUrl.isUri(originalUrl)) {
     try {
       let url = await Url.findOne({ originalUrl });
 
       if (url) {
-        // Send same record but replace localhost in response
-        const modified = {
-          ...url.toObject(),
-          shortUrl: url.shortUrl.replace(dbBaseUrl, responseBaseUrl),
-        };
-        return res.json(modified);
+        res.json(url);
       } else {
-        const shortUrl = dbBaseUrl + '/' + urlCode;
+        const shortUrl = baseUrl + '/' + urlCode;
 
         url = new Url({
           originalUrl,
-          shortUrl,   // store with localhost in DB
+          shortUrl,
           urlCode,
           date: new Date()
         });
 
         await url.save();
-
-        // Replace localhost before sending to frontend
-        const modified = {
-          ...url.toObject(),
-          shortUrl: url.shortUrl.replace(dbBaseUrl, responseBaseUrl),
-        };
-
-        res.json(modified);
+        res.json(url);
       }
     } catch (err) {
       console.error(err);
@@ -119,7 +64,6 @@ app.post('/api/url/shorten', async (req, res) => {
     res.status(401).json('Invalid original url');
   }
 });
-
 
 // @route   GET /:shortcode
 // @desc    Redirect to original URL
