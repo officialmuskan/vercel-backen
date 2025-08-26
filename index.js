@@ -17,9 +17,9 @@ const connectDatabase = async ()=>{
     console.log("Database connected")
 }
 connectDatabase()
-app.get('/', async(req, res) =>{
-    res.json("hello");
-}
+app.get('/', async (req, res) => {
+  res.json("hello");
+});
 app.post('/api/url/shorten', async (req, res) => {
   const { originalUrl } = req.body;
   const baseUrl = 'http://localhost:5000';
